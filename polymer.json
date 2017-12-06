@@ -1,0 +1,38 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/iron-icons-browser-app.html",
+  "fragments": [
+    "src/favorites-view.html",
+    "src/info-view.html",
+    "src/iron-icon-demo.html",
+    "src/iron-icon-dialog.html",
+    "src/iron-icon-set.html",
+    "src/iron-icons-browser-app.html",
+    "src/reset-favorite-dialog.html",
+    "src/search-view.html",
+    "src/shared-styles.html",
+    "src/view404.html"
+  ],
+  "sources": [
+    "src/**/*",
+    "images/**/*"
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/*.js"
+  ],
+  "lint": {
+    "rules": ["polymer-2"]
+  },
+  "builds": [
+    {
+      "preset": "es5-bundled"
+    },
+    {
+      "preset": "es6-bundled"
+    },
+    {
+      "preset": "es6-unbundled"
+    }
+  ]
+}

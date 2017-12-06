@@ -1,0 +1,6 @@
+{
+  "name": "iron-icons-browser",
+  "short_name": "iron-icons-browser",
+  "start_url": "/",
+  "display": "standalone"
+}

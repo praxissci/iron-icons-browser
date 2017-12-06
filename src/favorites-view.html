@@ -1,0 +1,134 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="iron-icon-demo.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+
+<dom-module id="favorites-view">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+
+      h1 {
+        display: inline-block;
+      }
+
+      .button {
+        display: inline-block;
+        transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        transition-delay: 0.2s;
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+        position: relative;
+        width: 120px;
+        height: 32px;
+        line-height: 32px;
+        border-radius: 2px;
+        font-size: 0.9em;
+        background-color: red;
+        color: #fff;
+        margin: 10px;
+        float: right;
+      }
+
+      .center {
+        display: block;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .button:active {
+        box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
+        transition-delay: 0s;
+      }
+    </style>
+
+    <div class="card">
+      <div>
+        <h1>favorites</h1>
+        <template is="dom-if" if="[[hasfavorites]]">
+          <div class="button">
+            <div class="center" tabindex="1" on-click="_promptResetfavorites">DELETE ALL</div>
+            <paper-ripple></paper-ripple>
+          </div>
+      </template>
+      </div>
+
+      <template is="dom-repeat" items="[[favorites]]">
+        <iron-icon-demo set-name="[[item.setName]]" name="[[item.iconName]]"></iron-icon-demo>
+      </template>
+      <template is="dom-if" if="[[hasNofavorites]]">
+        You have no favorited icons.
+      </template>
+    </div>
+  </template>
+
+  <script>
+    class favoritesView extends Polymer.Element {
+      static get is() { return 'favorites-view'; }
+      static get properties() {
+        return {
+          favorites: {
+            type: Array,
+            value: []
+          },
+          hasfavorites:{
+            type:Boolean,
+            computed:"_computeHasfavorite(favorites)"
+          },
+          hasNofavorites:{
+            type:Boolean,
+            computed:"_computeHasNofavorite(favorites)"
+          }
+        }
+      }
+      ready() {
+        super.ready();
+        this.getfavorites();
+        let self = this;
+        window.addEventListener('favorite-changed', function (e) {
+          self.getfavorites();
+        })
+      }
+      getfavorites() {
+        let rawfavorites = localStorage.getItem("favorites");
+        let favorites = [];
+        if (rawfavorites) {
+          favorites = JSON.parse(rawfavorites);
+        } else {
+          favorites = [];
+        }
+        this.set("favorites", favorites);
+      }
+      _computeHasfavorite(favorites){
+        return favorites.length > 0;
+      }
+      _computeHasNofavorite(favorites){
+        return favorites.length === 0;
+      }
+      _promptResetfavorites(){
+        window.dispatchEvent(new CustomEvent("open-prompt",
+          {
+            detail: {
+              type: "rest-favorite"
+            }
+          }
+        ));
+      }
+    }
+
+    window.customElements.define(favoritesView.is, favoritesView);
+  </script>
+</dom-module>

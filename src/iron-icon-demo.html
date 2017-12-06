@@ -1,0 +1,73 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="iron-icon-demo">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: inline-block;
+        width: 10em;
+        margin: 1em 0.5em;
+        text-align: center;
+        font-size: 10px;
+        position: relative;
+      }
+
+      :host>div {
+        display: flex;
+        flex-direction: column;
+      }
+
+      iron-icon {
+        align-self: center;
+      }
+    </style>
+    <div on-click="_selectIcon">
+      <iron-icon icon="{{iconAttribute}}"></iron-icon>
+      <div>[[iconAttribute]]</div>
+    </div>
+  </template>
+
+  <script>
+    class IronIconDemo extends Polymer.Element {
+      static get is() { return 'iron-icon-demo'; }
+      static get properties() {
+        return {
+          name: String,
+          setName: String,
+          iconAttribute: {
+            type: String,
+            computed: "_computeIconAttribute(setName,name)"
+          }
+        }
+      }
+      _computeIconAttribute(setName, name) {
+        return setName + ":" + name;
+      }
+      _selectIcon() {
+        window.dispatchEvent(new CustomEvent("open-dialog",
+          {
+            detail: {
+              name: this.name,
+              setName: this.setName
+            }
+          }
+        ));
+      }
+    }
+
+    window.customElements.define(IronIconDemo.is, IronIconDemo);
+  </script>
+</dom-module>

@@ -1,0 +1,205 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/prism-element/demo/prism-demo.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+
+<dom-module id="iron-icon-dialog">
+    <template>
+        <style include="shared-styles">
+            prism-demo{
+                display: inline-block;
+            }
+            .container,.option-container,#code-container{
+                text-align: center;
+            }
+            #code-container{
+                padding: 0 24px;
+            }
+            .big-icon {
+                --iron-icon-height: 64px;
+                --iron-icon-width: 64px;
+            }
+            .med-icon {
+                --iron-icon-height: 32px;
+                --iron-icon-width: 32px;
+            }
+            #code{
+                position: fixed;
+                top: 0;
+                left: 0;
+                background:transparent;
+                color: transparent;
+                border: none;
+                outline: none;
+                box-shadow: none;
+            }
+        </style>
+
+        <paper-dialog id="modal" with-backdrop>
+            <h2>[[iconAttribute]]</h2>
+            <div class="container">
+                <iron-icon icon="[[iconAttribute]]" class="big-icon"></iron-icon>
+                <div id="code-container">
+                    <prism-demo code='[[ironIconCode]]' lang="css"></prism-demo>
+                    <input id="code" value="[[ironIconCode]]">
+                    <iron-icon icon="icons:content-paste" on-click="_copyCode"></iron-icon>
+                </div>
+            </div>
+            <div class="container">
+                <template is="dom-if" if="{{notfavorited}}">
+                    <iron-icon icon="icons:favorite" class="med-icon" on-click="_favoriteselectedIcon"></iron-icon>
+                </template>
+                <template is="dom-if" if="{{favorited}}">
+                    <iron-icon icon="icons:delete" class="med-icon" on-click="_deleteSelectedIcon"></iron-icon>
+                </template>
+            </div>
+        </paper-dialog>
+        <paper-toast id="toast" class="fit-bottom" text="[[toastMessage]]"></paper-toast>
+    </template>
+
+    <script>
+        class IronIconDialog extends Polymer.Element {
+            static get is() { return 'iron-icon-dialog'; }
+            static get properties() {
+                return {
+                    name: {
+                        type: String,
+                        value: "undefined"
+                    },
+                    setName: {
+                        type: String,
+                        value: "undefined"
+                    },
+                    iconAttribute: {
+                        type: String,
+                        computed: "_computeIconAttribute(setName,name)"
+                    },
+                    ironIconCode: {
+                        type: String,
+                        computed: "_computeIronIconCode(iconAttribute)"
+                    },
+                    toastMessage: String,
+                    favorited:{
+                        type:Boolean,
+                        computed:"_findSelection(setName,name)"
+                    },
+                    notfavorited:{
+                        type:Boolean,
+                        computed:"_findSelection(setName,name,'not')"
+                    }
+                }
+            }
+            ready() {
+                super.ready();
+                let self = this;
+                window.addEventListener('open-dialog', function (e) {
+                    self.set("name", e.detail.name);
+                    self.set("setName", e.detail.setName);
+                    self.$.modal.open()
+                })
+
+                // set up dialog
+                this.$.toast.fitInto = this.$.modal;
+                this.$.toast.noCancelOnOutsideClick = false;
+            }
+
+            _favoriteselectedIcon() {
+                let favorites = [];
+                let rawfavorites = localStorage.getItem("favorites");
+                if (rawfavorites) {
+                    favorites = JSON.parse(rawfavorites);
+                    favorites.push({ setName: this.setName, iconName: this.name });
+                } else {
+                    favorites = [{ setName: this.setName, iconName: this.name }];
+                }
+                localStorage.setItem("favorites", JSON.stringify(favorites));
+
+                this._togglefavorite(); // TODO: weird implementation
+                this._toast('Added "'+ this.iconAttribute +'" to your favorite.')
+                window.dispatchEvent(new CustomEvent("favorite-changed", { detail:{ status: "added" }}));
+            }
+            _deleteSelectedIcon(){
+                let success = false;
+                let favorites = this._findSelection(this.setName,this.name,"delete");
+                if(favorites){
+                    localStorage.setItem("favorites", JSON.stringify(favorites))
+                    window.dispatchEvent(new CustomEvent("favorite-changed", { detail:{ status: "deleted" }}));
+                    this.set("favorited",false);
+                    this.set("notfavorited",true);
+                    this._toast('Deleted "'+ this.iconAttribute +'" from your favorite.');
+                }else{
+                    this._toast("Something went wrong.")
+                }
+                this._togglefavorite(); // TODO: weird implementation
+            }
+            _togglefavorite(){
+                let temp = this.name;
+                this.set('name',"");
+                this.set('name',temp);
+            }
+            _findSelection(setName,name,option=null){
+                let found = false;
+                let favorites = [];
+                let rawfavorites = localStorage.getItem("favorites");
+                if (rawfavorites) {
+                    favorites = JSON.parse(rawfavorites);
+                    for (let i = 0; i < favorites.length; i++) {
+                        if(favorites[i].setName == setName && favorites[i].iconName == name){
+                            if(option == "delete"){
+                                favorites.splice(i,1);
+                                return favorites;
+                            }
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if(option == "not"){
+                    found = !found;
+                }
+                return found;
+            }
+            _close(){
+                this.name = "undefined"
+                this.setName = "undefined"
+                this.$.modal.close();
+            }
+            _copyCode() {
+                let codeInput = this.$["code"]
+                codeInput.select();
+                let successful = false;
+                try {
+                    successful = document.execCommand('copy');
+                }catch (err) {
+                    console.log('Oops, unable to copy');
+                }
+                codeInput.selectionStart = codeInput.selectionEnd;
+                successful ? this._toast("Copied to clipboard.") : this._toast("Something went wrong.");
+            }
+            _computeIconAttribute(setName, name) {
+                return setName + ":" + name;
+            }
+            _computeIronIconCode(iconAttribute){
+                return '<iron-icon icon="'+iconAttribute+'"></iron-icon>'
+            }
+            _toast(toastMessage){
+                this.set("toastMessage",toastMessage)
+                this.$.toast.open();
+            }
+        }
+
+        window.customElements.define(IronIconDialog.is, IronIconDialog);
+    </script>
+</dom-module>

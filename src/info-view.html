@@ -1,0 +1,53 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="info-view">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+      code{
+        color: white;
+        background-color: rgb(44, 44, 44);
+        padding: 10px;
+      }
+    </style>
+
+    <div class="card">
+      <h1>Information</h1>
+      <p>I am making this app to learn about Polymer in general and at the same time see what kind of icons are offered in iron-icons element.</p>
+      <p>Tabs on the side shows you the sets of icons available. You can also search for icons and save your favorites for future reference.</p>
+    </div>
+    <div class="card">
+      <h1>How-to</h1>
+      <p>The iron-icons element can used by installing iron-icons. You can do this by using bower.</p>
+      <code>$ bower install PolymerElements/iron-icons --save</code>
+      <p>Import the icon set that you are interested in using in the head of your html document.</p>
+      <code>&lt;link rel="import" href="bower_components/iron-icons/av-icons.html"&gt;</code>
+      <p>And then you can start using the iron-icons.</p>
+      <p>Example using the directions-bus icon from the maps icon set:</p>
+      <code>&lt;iron-icon icon="maps:directions-bus"&gt;</iron-icon></code>
+      <p>More details are found at <a href="https://www.webcomponents.org/element/PolymerElements/iron-icons">https://www.webcomponents.org/element/PolymerElements/iron-icons</a></p>
+    </div>
+  </template>
+
+  <script>
+    class InfoView extends Polymer.Element {
+      static get is() { return 'info-view'; }
+    }
+
+    window.customElements.define(InfoView.is, InfoView);
+  </script>
+</dom-module>
